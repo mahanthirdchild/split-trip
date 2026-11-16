@@ -120,11 +120,33 @@
       <p class="lede" data-i18n="reportLede">Each person’s share, what they paid, and net balance (paid minus share). Then trip totals by currency.</p>
       <div id="reportBody" class="report-body"></div>
     </section>
+
+    <section class="panel" id="actions">
+      <h2 data-i18n="actionsTitle">Save &amp; export</h2>
+      <p class="lede" data-i18n="actionsLede">Save a backup of this trip, or download a PDF of all payments.</p>
+      <div class="row-actions export-actions">
+        <button type="button" class="btn primary" id="saveBtn" data-i18n="saveData">Save</button>
+        <button type="button" class="btn ghost" id="pdfBtn" data-i18n="pdfReport">PDF report</button>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
     <span data-i18n="footer">Saved in this browser · run locally anytime</span>
   </footer>
+
+  <div class="modal" id="pdfModal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pdfModalTitle">
+      <h3 id="pdfModalTitle" data-i18n="pdfLangTitle">PDF language</h3>
+      <p class="lede" data-i18n="pdfLangLede">Which language should the PDF report use?</p>
+      <div class="row-actions export-actions">
+        <button type="button" class="btn primary" id="pdfEnBtn">English</button>
+        <button type="button" class="btn primary" id="pdfFaBtn">فارسی</button>
+        <button type="button" class="btn ghost" id="pdfCancelBtn" data-i18n="cancel" data-close-modal>Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

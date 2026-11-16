@@ -65,6 +65,18 @@
       total: "Total",
       nothingYet: "Nothing yet",
       docTitle: "SplitTrip — trip expenses",
+      actionsTitle: "Save & export",
+      actionsLede: "Save a backup of this trip, or download a PDF of all payments.",
+      saveData: "Save",
+      pdfReport: "PDF report",
+      pdfLangTitle: "PDF language",
+      pdfLangLede: "Which language should the PDF report use?",
+      cancel: "Cancel",
+      savedToast: "Trip data saved to your device.",
+      pdfEmpty: "Add at least one expense before creating a PDF.",
+      pdfPayments: "All payments",
+      pdfGenerated: "Generated",
+      pdfHint: "Use your browser’s print dialog and choose “Save as PDF”.",
     },
     fa: {
       brandTag: "هزینه‌های شخصی و مشترک سفر، با مشخص بودن پرداخت‌کننده",
@@ -124,6 +136,18 @@
       total: "جمع",
       nothingYet: "هنوز چیزی نیست",
       docTitle: "SplitTrip — هزینه‌های سفر",
+      actionsTitle: "ذخیره و خروجی",
+      actionsLede: "از این سفر نسخه پشتیبان بگیرید یا گزارش PDF همه پرداخت‌ها را دانلود کنید.",
+      saveData: "ذخیره",
+      pdfReport: "گزارش PDF",
+      pdfLangTitle: "زبان PDF",
+      pdfLangLede: "گزارش PDF به کدام زبان باشد؟",
+      cancel: "انصراف",
+      savedToast: "اطلاعات سفر روی دستگاه شما ذخیره شد.",
+      pdfEmpty: "قبل از ساخت PDF حداقل یک هزینه اضافه کنید.",
+      pdfPayments: "همه پرداخت‌ها",
+      pdfGenerated: "تاریخ تهیه",
+      pdfHint: "در پنجره چاپ مرورگر، گزینه «Save as PDF» یا «ذخیره به‌صورت PDF» را انتخاب کنید.",
     },
   };
 
@@ -152,6 +176,11 @@
     reportBody: document.getElementById("reportBody"),
     langEn: document.getElementById("langEn"),
     langFa: document.getElementById("langFa"),
+    saveBtn: document.getElementById("saveBtn"),
+    pdfBtn: document.getElementById("pdfBtn"),
+    pdfModal: document.getElementById("pdfModal"),
+    pdfEnBtn: document.getElementById("pdfEnBtn"),
+    pdfFaBtn: document.getElementById("pdfFaBtn"),
   };
 
   function loadLang() {
@@ -168,8 +197,8 @@
     localStorage.setItem(LANG_KEY, lang);
   }
 
-  function t(key, vars = {}) {
-    const table = STRINGS[lang] || STRINGS.en;
+  function tLang(useLang, key, vars = {}) {
+    const table = STRINGS[useLang] || STRINGS.en;
     let text = table[key] ?? STRINGS.en[key] ?? key;
     for (const [k, v] of Object.entries(vars)) {
       text = text.replaceAll(`{${k}}`, String(v));
@@ -177,12 +206,16 @@
     return text;
   }
 
+  function t(key, vars = {}) {
+    return tLang(lang, key, vars);
+  }
+
   function defaultPersonName(n) {
     return t("personN", { n });
   }
 
-  function localeTag() {
-    return lang === "fa" ? "fa-IR" : undefined;
+  function localeTag(useLang = lang) {
+    return useLang === "fa" ? "fa-IR" : undefined;
   }
 
   function todayISO() {
@@ -237,23 +270,30 @@
     return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
-  function money(amount, currency) {
+  function money(amount, currency, useLang = lang) {
     const n = Number(amount);
-    const formatted = n.toLocaleString(localeTag(), {
+    const formatted = n.toLocaleString(localeTag(useLang), {
       minimumFractionDigits: n % 1 === 0 ? 0 : 2,
       maximumFractionDigits: 2,
     });
     return `${SYMBOLS[currency] || ""}${formatted} ${currency}`;
   }
 
-  function formatDate(iso) {
+  function formatDate(iso, useLang = lang) {
     if (!iso) return "";
     const d = new Date(`${iso}T12:00:00`);
     if (Number.isNaN(d.getTime())) return iso;
-    return d.toLocaleDateString(localeTag(), {
+    return d.toLocaleDateString(localeTag(useLang), {
       year: "numeric",
       month: "short",
       day: "numeric",
+    });
+  }
+
+  function formatNum(n, useLang = lang) {
+    return Number(n).toLocaleString(localeTag(useLang), {
+      minimumFractionDigits: Number(n) % 1 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
     });
   }
 
@@ -373,11 +413,178 @@
     syncModeUI();
   }
 
-  function forWhomLabel(exp, people) {
+  function forWhomLabel(exp, people, useLang = lang) {
     if (exp.mode === "personal") return personName(exp.personIds[0], people);
-    return t("sharedWith", {
-      names: exp.personIds.map((id) => personName(id, people)).join(lang === "fa" ? "، " : ", "),
+    return tLang(useLang, "sharedWith", {
+      names: exp.personIds
+        .map((id) => personName(id, people))
+        .join(useLang === "fa" ? "، " : ", "),
     });
+  }
+
+  function openPdfModal() {
+    if (!state.expenses.length) {
+      alert(t("pdfEmpty"));
+      return;
+    }
+    els.pdfModal.hidden = false;
+  }
+
+  function closePdfModal() {
+    els.pdfModal.hidden = true;
+  }
+
+  function downloadSaveFile() {
+    save();
+    const payload = {
+      tripName: state.tripName,
+      people: state.people,
+      expenses: state.expenses,
+      savedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = todayISO();
+    const base = (state.tripName || "splittrip").trim().replace(/\s+/g, "-") || "splittrip";
+    a.href = url;
+    a.download = `${base}-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    alert(t("savedToast"));
+  }
+
+  function buildPdfHtml(reportLang) {
+    const people = activePeople();
+    const { perPerson, tripTotals } = computeReport();
+    const hints = settlementHints(perPerson);
+    const tripName = (state.tripName || "").trim() || "SplitTrip";
+    const dir = reportLang === "fa" ? "rtl" : "ltr";
+    const arrow = reportLang === "fa" ? "←" : "→";
+    const sep = reportLang === "fa" ? "، " : ", ";
+
+    const paymentRows = [...state.expenses]
+      .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")))
+      .map((exp) => {
+        const forWhom = forWhomLabel(exp, people, reportLang);
+        return `<tr>
+          <td>${escapeHtml(formatDate(exp.date, reportLang))}</td>
+          <td>${escapeHtml(exp.reason)}</td>
+          <td>${escapeHtml(money(exp.amount, exp.currency, reportLang))}</td>
+          <td>${escapeHtml(personName(exp.paidBy, people))}</td>
+          <td>${escapeHtml(forWhom)}</td>
+        </tr>`;
+      })
+      .join("");
+
+    const personBlocks = perPerson
+      .map((person) => {
+        const shareBits = CURRENCIES.filter((c) => person.share[c] > 0)
+          .map((c) => money(person.share[c], c, reportLang))
+          .join(sep);
+        const paidBits = CURRENCIES.filter((c) => person.paid[c] > 0)
+          .map((c) => money(person.paid[c], c, reportLang))
+          .join(sep);
+        const netBits = CURRENCIES.filter((c) => Math.abs(person.net[c]) > 0.005)
+          .map((c) => {
+            const label = person.net[c] > 0 ? tLang(reportLang, "owed") : tLang(reportLang, "owes");
+            return `${money(Math.abs(person.net[c]), c, reportLang)} ${label}`;
+          })
+          .join(sep);
+        return `<section class="block">
+          <h3>${escapeHtml(person.name)}</h3>
+          <p><strong>${escapeHtml(tLang(reportLang, "share"))}:</strong> ${escapeHtml(shareBits || "0")}</p>
+          <p><strong>${escapeHtml(tLang(reportLang, "paid"))}:</strong> ${escapeHtml(paidBits || "0")}</p>
+          <p><strong>${escapeHtml(tLang(reportLang, "net"))}:</strong> ${escapeHtml(netBits || tLang(reportLang, "settled"))}</p>
+        </section>`;
+      })
+      .join("");
+
+    const settleRows = hints.length
+      ? hints
+          .map(
+            (h) =>
+              `<tr><td>${escapeHtml(h.from)} ${arrow} ${escapeHtml(h.to)}</td><td>${escapeHtml(money(h.amount, h.currency, reportLang))}</td></tr>`
+          )
+          .join("")
+      : `<tr><td colspan="2">${escapeHtml(tLang(reportLang, "settleEven"))}</td></tr>`;
+
+    const tripBits = CURRENCIES.filter((c) => (tripTotals[c] || 0) > 0)
+      .map((c) => money(tripTotals[c], c, reportLang))
+      .join(" + ");
+
+    return `<!DOCTYPE html>
+<html lang="${reportLang === "fa" ? "fa" : "en"}" dir="${dir}">
+<head>
+  <meta charset="UTF-8" />
+  <title>${escapeHtml(tripName)} — SplitTrip</title>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: ${reportLang === "fa" ? '"Vazirmatn",' : ""} Figtree, system-ui, sans-serif; color: #10221c; margin: 24px; line-height: 1.45; }
+    h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
+    h2 { margin: 1.4rem 0 0.5rem; font-size: 1.15rem; border-bottom: 1px solid #d7e0db; padding-bottom: 0.3rem; }
+    h3 { margin: 0 0 0.35rem; font-size: 1.05rem; }
+    .meta { color: #3a5248; margin-bottom: 1rem; }
+    table { width: 100%; border-collapse: collapse; margin: 0.5rem 0 1rem; font-size: 0.92rem; }
+    th, td { border: 1px solid #d7e0db; padding: 0.45rem 0.55rem; text-align: start; vertical-align: top; }
+    th { background: #eef5f1; }
+    .block { margin-bottom: 0.85rem; padding: 0.65rem 0.75rem; border: 1px solid #d7e0db; border-radius: 8px; }
+    .hint { color: #3a5248; font-size: 0.85rem; margin-top: 1.25rem; }
+    @media print { body { margin: 12px; } .hint { display: none; } }
+  </style>
+</head>
+<body>
+  <h1>SplitTrip — ${escapeHtml(tripName)}</h1>
+  <p class="meta">${escapeHtml(tLang(reportLang, "pdfGenerated"))}: ${escapeHtml(formatDate(todayISO(), reportLang))}</p>
+
+  <h2>${escapeHtml(tLang(reportLang, "pdfPayments"))}</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>${escapeHtml(tLang(reportLang, "date"))}</th>
+        <th>${escapeHtml(tLang(reportLang, "purpose"))}</th>
+        <th>${escapeHtml(tLang(reportLang, "amount"))}</th>
+        <th>${escapeHtml(tLang(reportLang, "whoPaid"))}</th>
+        <th>${escapeHtml(tLang(reportLang, "whoFor"))}</th>
+      </tr>
+    </thead>
+    <tbody>${paymentRows}</tbody>
+  </table>
+
+  <h2>${escapeHtml(tLang(reportLang, "byPerson"))}</h2>
+  ${personBlocks}
+
+  <h2>${escapeHtml(tLang(reportLang, "settleUp"))}</h2>
+  <table>
+    <tbody>${settleRows}</tbody>
+  </table>
+
+  <h2>${escapeHtml(tLang(reportLang, "tripTotals"))}</h2>
+  <p><strong>${escapeHtml(tLang(reportLang, "total"))}:</strong> ${escapeHtml(tripBits || tLang(reportLang, "nothingYet"))}</p>
+
+  <p class="hint">${escapeHtml(tLang(reportLang, "pdfHint"))}</p>
+  <script>window.addEventListener('load', () => setTimeout(() => window.print(), 350));<\/script>
+</body>
+</html>`;
+  }
+
+  function generatePdf(reportLang) {
+    closePdfModal();
+    if (!state.expenses.length) {
+      alert(t("pdfEmpty"));
+      return;
+    }
+    const html = buildPdfHtml(reportLang);
+    const w = window.open("", "_blank");
+    if (!w) {
+      alert(t("pdfHint"));
+      return;
+    }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
   }
 
   function renderExpenses() {
@@ -670,13 +877,6 @@
     `;
   }
 
-  function formatNum(n) {
-    return Number(n).toLocaleString(localeTag(), {
-      minimumFractionDigits: Number(n) % 1 === 0 ? 0 : 2,
-      maximumFractionDigits: 2,
-    });
-  }
-
   function escapeHtml(str) {
     return String(str)
       .replaceAll("&", "&amp;")
@@ -792,6 +992,17 @@
     renderExpenses();
     renderReport();
     save();
+  });
+
+  els.saveBtn.addEventListener("click", downloadSaveFile);
+  els.pdfBtn.addEventListener("click", openPdfModal);
+  els.pdfEnBtn.addEventListener("click", () => generatePdf("en"));
+  els.pdfFaBtn.addEventListener("click", () => generatePdf("fa"));
+  els.pdfModal.addEventListener("click", (e) => {
+    if (e.target.closest("[data-close-modal]")) closePdfModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !els.pdfModal.hidden) closePdfModal();
   });
 
   els.expenseDate.value = todayISO();
