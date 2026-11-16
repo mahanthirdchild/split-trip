@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f6e56" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="SplitTrip" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>SplitTrip</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-mesh" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="header-top">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" class="lang-btn is-active" data-lang="en" id="langEn">English</button>
+        <button type="button" class="lang-btn" data-lang="fa" id="langFa">فارسی</button>
+      </div>
+    </div>
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">SplitTrip</span>
+    </div>
+    <p class="brand-tag" data-i18n="brandTag">Personal &amp; shared trip spending, with who paid</p>
+  </header>
+
+  <main>
+    <section class="panel" id="setup">
+      <h2 data-i18n="setupTitle">Who’s on the trip?</h2>
+      <p class="lede" data-i18n="setupLede">Add up to 5 people. Shared costs split evenly; whoever paid gets credit in the settlement.</p>
+
+      <label class="field">
+        <span data-i18n="tripName">Trip name</span>
+        <input id="tripName" type="text" maxlength="80" data-i18n-placeholder="tripNamePlaceholder" placeholder="Lisbon weekend" autocomplete="off" />
+      </label>
+
+      <div class="people-grid" id="peopleInputs"></div>
+
+      <div class="row-actions">
+        <button type="button" class="btn ghost" id="addPersonBtn" data-i18n="addPerson">Add person</button>
+        <button type="button" class="btn ghost danger" id="clearDataBtn" data-i18n="clearAll" data-i18n-title="clearAllTitle" title="Clear all saved data">Clear all</button>
+      </div>
+    </section>
+
+    <section class="panel" id="entry">
+      <h2 data-i18n="entryTitle">Add an expense</h2>
+      <p class="lede" data-i18n="entryLede">Amount, currency, purpose, who paid, and date. Mark it personal or shared for the people it covers.</p>
+
+      <form id="expenseForm" class="expense-form">
+        <label class="field">
+          <span data-i18n="amount">Amount</span>
+          <input id="amount" type="number" min="0" step="0.01" placeholder="0.00" required />
+        </label>
+
+        <label class="field">
+          <span data-i18n="currency">Currency</span>
+          <select id="currency" required>
+            <option value="EUR">EUR €</option>
+            <option value="GBP">GBP £</option>
+            <option value="USD">USD $</option>
+          </select>
+        </label>
+
+        <label class="field field-wide">
+          <span data-i18n="purpose">Purpose</span>
+          <input id="reason" type="text" maxlength="120" data-i18n-placeholder="purposePlaceholder" placeholder="Hotels, taxi, shoes…" required autocomplete="off" />
+        </label>
+
+        <label class="field">
+          <span data-i18n="whoPaid">Who paid</span>
+          <select id="paidBy" required></select>
+        </label>
+
+        <label class="field">
+          <span data-i18n="date">Date</span>
+          <input id="expenseDate" type="date" required />
+        </label>
+
+        <fieldset class="field field-wide split-mode">
+          <legend data-i18n="whoFor">Who is this for?</legend>
+          <div class="mode-toggle">
+            <label class="chip">
+              <input type="radio" name="mode" value="personal" checked />
+              <span data-i18n="personal">Personal</span>
+            </label>
+            <label class="chip">
+              <input type="radio" name="mode" value="shared" />
+              <span data-i18n="shared">Shared</span>
+            </label>
+          </div>
+
+          <div id="personalPick" class="pick-row"></div>
+          <div id="sharedPick" class="pick-row" hidden></div>
+        </fieldset>
+
+        <button type="submit" class="btn primary field-wide" data-i18n="addExpense">Add expense</button>
+      </form>
+    </section>
+
+    <section class="panel" id="ledger">
+      <div class="section-head">
+        <h2 data-i18n="expensesTitle">Expenses</h2>
+        <span class="count" id="expenseCount">0</span>
+      </div>
+      <div id="expenseList" class="expense-list"></div>
+    </section>
+
+    <section class="panel report" id="report">
+      <h2 data-i18n="reportTitle">Report</h2>
+      <p class="lede" data-i18n="reportLede">Each person’s share, what they paid, and net balance (paid minus share). Then trip totals by currency.</p>
+      <div id="reportBody" class="report-body"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span data-i18n="footer">Saved in this browser · run locally anytime</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

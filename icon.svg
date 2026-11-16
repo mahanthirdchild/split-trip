@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="SplitTrip">
+  <rect width="128" height="128" rx="28" fill="#0f6e56"/>
+  <path d="M34 78c0-18 14-32 30-32h2c10 0 18 8 18 18s-8 18-18 18H60c-8 0-14 6-14 14s6 14 14 14h20" fill="none" stroke="#f3f7f4" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="86" cy="42" r="8" fill="#c45c26"/>
+</svg>
