@@ -2,8 +2,8 @@
   const STORAGE_KEY = "splittrip.v2";
   const LEGACY_KEY = "splittrip.v1";
   const LANG_KEY = "splittrip.lang";
-  const CURRENCIES = ["EUR", "GBP", "USD"];
-  const SYMBOLS = { EUR: "€", GBP: "£", USD: "$" };
+  const CURRENCIES = ["EUR", "GBP", "USD", "IRT"];
+  const SYMBOLS = { EUR: "€", GBP: "£", USD: "$", IRT: "تومان" };
   const MAX_PEOPLE = 5;
 
   const STRINGS = {
