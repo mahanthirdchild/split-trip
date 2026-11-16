@@ -1,3 +1,9 @@
 .DS_Store
 demo/
 *.webp
+node_modules/
+data/
+*.db
+*.db-*
+.env
+.env.*

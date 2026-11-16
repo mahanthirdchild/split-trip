@@ -35,20 +35,66 @@
   </header>
 
   <main>
-    <section class="panel" id="setup">
-      <h2 data-i18n="setupTitle">Who’s on the trip?</h2>
-      <p class="lede" data-i18n="setupLede">Add up to 5 people. Shared costs split evenly; whoever paid gets credit in the settlement.</p>
+    <section class="panel" id="shareSetup">
+      <h2 data-i18n="shareTitle">Shared trip</h2>
+      <p class="lede" data-i18n="shareLede">Create a private trip and share the link or join code. Up to 10 people. Changes sync to everyone’s phones.</p>
+      <p class="sync-banner" id="syncBanner" hidden></p>
 
-      <label class="field">
-        <span data-i18n="tripName">Trip name</span>
-        <input id="tripName" type="text" maxlength="80" data-i18n-placeholder="tripNamePlaceholder" placeholder="Lisbon weekend" autocomplete="off" />
-      </label>
+      <div id="shareIdle">
+        <label class="field">
+          <span data-i18n="yourName">Your name</span>
+          <input id="creatorName" type="text" maxlength="40" data-i18n-placeholder="namePlaceholder" placeholder="Name" autocomplete="name" />
+        </label>
+        <label class="field">
+          <span data-i18n="tripName">Trip name</span>
+          <input id="newTripName" type="text" maxlength="80" data-i18n-placeholder="tripNamePlaceholder" placeholder="Lisbon weekend" autocomplete="off" />
+        </label>
+        <div class="row-actions">
+          <button type="button" class="btn primary" id="createTripBtn" data-i18n="createTrip">Create shared trip</button>
+        </div>
+        <div class="join-box">
+          <label class="field">
+            <span data-i18n="joinCode">Join code</span>
+            <input id="joinCodeInput" type="text" maxlength="12" placeholder="ABC123" autocomplete="off" />
+          </label>
+          <button type="button" class="btn ghost" id="joinTripBtn" data-i18n="joinTrip">Join trip</button>
+        </div>
+        <p class="lede" data-i18n="localFallbackNote">If the shared server is offline, you can still use local-only mode below.</p>
+        <button type="button" class="btn ghost" id="localModeBtn" data-i18n="useLocalMode">Use local-only mode</button>
+      </div>
 
-      <div class="people-grid" id="peopleInputs"></div>
+      <div id="shareActive" hidden>
+        <label class="field">
+          <span data-i18n="tripName">Trip name</span>
+          <input id="tripName" type="text" maxlength="80" data-i18n-placeholder="tripNamePlaceholder" placeholder="Lisbon weekend" autocomplete="off" />
+        </label>
+        <div class="share-card">
+          <div class="stat-label" data-i18n="shareWithFriends">Share with friends</div>
+          <p class="join-code-display"><span data-i18n="joinCode">Join code</span>: <strong id="joinCodeDisplay">—</strong></p>
+          <input id="shareLinkInput" type="text" readonly />
+          <div class="row-actions">
+            <button type="button" class="btn ghost" id="copyShareBtn" data-i18n="copyLink">Copy link</button>
+            <button type="button" class="btn ghost danger" id="resetTripBtn" data-i18n="resetTrip" hidden>Reset trip</button>
+            <button type="button" class="btn ghost" id="leaveTripBtn" data-i18n="leaveTrip">Leave trip</button>
+          </div>
+        </div>
+        <div class="people-grid" id="peopleInputs"></div>
+        <div class="row-actions">
+          <button type="button" class="btn ghost" id="addPersonBtn" data-i18n="addPerson">Add person</button>
+        </div>
+      </div>
 
-      <div class="row-actions">
-        <button type="button" class="btn ghost" id="addPersonBtn" data-i18n="addPerson">Add person</button>
-        <button type="button" class="btn ghost danger" id="clearDataBtn" data-i18n="clearAll" data-i18n-title="clearAllTitle" title="Clear all saved data">Clear all</button>
+      <div id="localActive" hidden>
+        <label class="field">
+          <span data-i18n="tripName">Trip name</span>
+          <input id="localTripName" type="text" maxlength="80" data-i18n-placeholder="tripNamePlaceholder" placeholder="Lisbon weekend" autocomplete="off" />
+        </label>
+        <div class="people-grid" id="localPeopleInputs"></div>
+        <div class="row-actions">
+          <button type="button" class="btn ghost" id="localAddPersonBtn" data-i18n="addPerson">Add person</button>
+          <button type="button" class="btn ghost danger" id="clearDataBtn" data-i18n="clearAll" data-i18n-title="clearAllTitle" title="Clear all saved data">Clear all</button>
+          <button type="button" class="btn ghost" id="backToShareBtn" data-i18n="backToShare">Back to shared trip</button>
+        </div>
       </div>
     </section>
 

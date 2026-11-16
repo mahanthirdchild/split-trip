@@ -622,6 +622,48 @@ select:focus {
   font-size: 0.88rem;
 }
 
+.sync-banner {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  background: rgba(15, 110, 86, 0.1);
+  color: var(--accent-deep);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.sync-banner[data-kind="warn"] {
+  background: rgba(196, 92, 38, 0.12);
+  color: #8a3d14;
+}
+
+.sync-banner[hidden] {
+  display: none !important;
+}
+
+.join-box {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--line);
+}
+
+.share-card {
+  margin: 0 0 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.join-code-display {
+  margin: 0.35rem 0 0.65rem;
+  font-size: 1.05rem;
+}
+
+.share-card input[readonly] {
+  margin-bottom: 0.65rem;
+}
+
 .export-actions {
   margin-top: 0.25rem;
 }
